@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Agents - Pro Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- PrismJS per Syntax Highlighting (Tema Dark) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <style>
+        /* Apple System Font Stack */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2560&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+            color: #E1E1E1;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Default hidden scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Custom Dark Scrollbar */
+        .mac-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .mac-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .mac-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        .mac-scrollbar:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(255,255,255,0.3);
+        }
+
+        /* Main App Container - Full Screen Glass */
+        .mac-window {
+            background-color: rgba(30, 30, 32, 0.85);
+            backdrop-filter: blur(50px) saturate(120%);
+            -webkit-backdrop-filter: blur(50px) saturate(120%);
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .mac-sidebar {
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .mac-input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: white;
+            transition: all 0.2s;
+        }
+        .mac-input:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+
+        @keyframes expandModal {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .animate-expand {
+            animation: expandModal 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-in-right {
+            animation: slideInRight 0.3s ease-out forwards;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(10, 132, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0); }
+        }
+        .writing-active {
+            animation: pulse-ring 2s infinite;
+        }
+
+        /* Blinking Cursor for Streaming Code */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .cursor-blink::after {
+            content: '▋';
+            display: inline-block;
+            margin-left: 2px;
+            color: #0A84FF;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            font-size: 0.8em;
+        }
+
+        .file-switch-enter {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Resizer Handle */
+        .resizer-handle {
+            transition: background-color 0.2s;
+        }
+        .resizer-handle:hover, .resizer-handle.active {
+            background-color: #0A84FF;
+        }
+
+        /* Override Prism styles */
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            text-shadow: none !important;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+            font-size: inherit !important;
+        }
+        code[class*="language-"] {
+            text-shadow: none !important;
+            font-family: inherit !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // --- ICONS (Lucide) ---
+        const Icon = ({ name, size = 16, className = "", strokeWidth = 2 }) => {
+            const icons = {
+                Folder: <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>,
+                FolderOpen: <><path d="m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2"/></>,
+                FileText: <><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></>,
+                FileJson: <><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 12h.01"/><path d="M14 12h.01"/><path d="M10 16h.01"/><path d="M14 16h.01"/></>,
+                FileCode: <><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15-2-2 2-2"/><path d="m15 11 2 2-2 2"/></>,
+                Search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
+                Command: <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>,
+                Cpu: <><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></>,
+                Play: <polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/>,
+                Pause: <><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></>,
+                Settings: <><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>,
+                LayoutList: <><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M14 4h7"/><path d="M14 9h7"/><path d="M14 15h7"/><path d="M14 20h7"/></>,
+                Globe: <><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></>,
+                Terminal: <><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></>,
+                Send: <><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
+                ArrowUp: <><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></>,
+                History: <><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></>,
+                Edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>,
+                X: <><path d="M18 6 6 18"/><path d="M6 6 18 18"/></>,
+                Maximize2: <><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></>,
+                Minimize2: <><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></>,
+                ChevronRight: <path d="m9 18 6-6-6-6"/>,
+                ChevronDown: <path d="m6 9 6 6 6-6"/>,
+                Loader2: <path d="M21 12a9 9 0 1 1-6.219-8.56" />,
+                PenTool: <><path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/></>,
+                Zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>,
+                Code: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
+                Eye: <><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>
+            };
+
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={size}
+                    height={size}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`${className} ${name === 'Loader2' ? 'animate-spin' : ''}`}
+                >
+                    {icons[name] || <circle cx="12" cy="12" r="10"/>}
+                </svg>
+            );
+        };
+
+        // --- CODE BLOCK COMPONENT ---
+        const CodeBlock = ({ code, language, className = "", isStreaming = false }) => {
+            const codeRef = useRef(null);
+            const containerRef = useRef(null);
+            const endRef = useRef(null);
+
+            useEffect(() => {
+                if (codeRef.current && window.Prism) {
+                    window.Prism.highlightElement(codeRef.current);
+                }
+            }, [code, language]);
+
+            useEffect(() => {
+                if (isStreaming && endRef.current) {
+                    endRef.current.scrollIntoView({ behavior: "smooth" });
+                }
+            }, [code, isStreaming]);
+
+            const getLanguageClass = (type) => {
+                if (!type) return 'language-none';
+                if (type === 'json') return 'language-json';
+                if (type === 'typescript' || type === 'ts' || type === 'tsx') return 'language-typescript';
+                if (type === 'javascript' || type === 'js' || type === 'jsx') return 'language-javascript';
+                if (type === 'markdown' || type === 'md') return 'language-markdown';
+                if (type === 'css') return 'language-css';
+                if (type === 'python' || type === 'py') return 'language-python';
+                return 'language-none';
+            };
+
+            return (
+                <div ref={containerRef} className="relative h-full overflow-visible">
+                    <pre className={`${className} !bg-transparent !overflow-visible`}>
+                        <code ref={codeRef} className={getLanguageClass(language)}>
+                            {code}
+                        </code>
+                        {isStreaming && <span className="cursor-blink"></span>}
+                        <div ref={endRef} />
+                    </pre>
+                </div>
+            );
+        };
+
+        const FileIcon = ({ type, selected }) => {
+            const color = selected ? 'text-white' :
+                type === 'json' ? 'text-yellow-400' :
+                type === 'python' || type === 'py' ? 'text-blue-400' :
+                type === 'typescript' || type === 'ts' || type === 'tsx' ? 'text-blue-300' :
+                type === 'css' ? 'text-blue-200' :
+                type === 'folder' ? 'text-blue-400' :
+                type === 'markdown' || type === 'md' ? 'text-pink-400' : 'text-gray-400';
+
+            const IconComp = type === 'json' ? 'FileJson' :
+                             type === 'python' || type === 'typescript' || type === 'code' || type === 'css' || type === 'py' || type === 'ts' || type === 'tsx' || type === 'jsx' ? 'FileCode' :
+                             type === 'folder' ? 'Folder' :
+                             'FileText';
+
+            return <Icon name={IconComp} size={16} className={color} />;
+        };
+
+        // --- RECURSIVE FILE TREE COMPONENT ---
+        const FileTreeItem = ({ node, level, onSelect, selectedNode, streamingFileId }) => {
+            const [isOpen, setIsOpen] = useState(true);
+            const isFolder = node.type === 'folder';
+            const isSelected = selectedNode?.id === node.id;
+            const isStreaming = streamingFileId === node.id;
+            const hasChildren = isFolder && node.children && node.children.length > 0;
+
+            const handleToggle = (e) => {
+                e.stopPropagation();
+                setIsOpen(!isOpen);
+            };
+
+            const handleClick = () => {
+                if (isFolder) {
+                    setIsOpen(!isOpen);
+                } else {
+                    onSelect(node);
+                }
+            };
+
+            return (
+                <div className="animate-slide-in-right">
+                    <div
+                        onClick={handleClick}
+                        className={`group flex items-center py-1.5 px-2 rounded-md cursor-pointer text-xs transition-all select-none ${
+                            isSelected
+                            ? 'bg-[#0058D0] text-white shadow-sm'
+                            : 'text-gray-300 hover:bg-white/5'
+                        } ${isStreaming ? 'writing-active' : ''}`}
+                        style={{ paddingLeft: `${level * 16 + 8}px` }}
+                    >
+                        {isFolder && (
+                            <span
+                                onClick={handleToggle}
+                                className="mr-1 p-0.5 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <Icon name={isOpen ? "ChevronDown" : "ChevronRight"} size={12} />
+                            </span>
+                        )}
+                        {!isFolder && <span className="w-4 mr-1"></span>}
+
+                        <div className="mr-2 opacity-90 relative">
+                            {isStreaming ? (
+                                <Icon name="Loader2" size={16} className="text-yellow-400" />
+                            ) : (
+                                isFolder ? (
+                                    <Icon name={isOpen ? "FolderOpen" : "Folder"} size={16} className={isSelected ? "text-white" : "text-blue-400"} />
+                                ) : (
+                                    <FileIcon type={node.type} selected={isSelected} />
+                                )
+                            )}
+                        </div>
+                        <span className={`font-medium truncate ${isSelected ? 'text-white' : (isStreaming ? 'text-yellow-400' : 'text-gray-200')}`}>
+                            {node.name} {isStreaming && <span className="ml-2 text-[10px] opacity-70 italic">writing...</span>}
+                        </span>
+                    </div>
+
+                    {isFolder && isOpen && hasChildren && (
+                        <div className="flex flex-col">
+                            {node.children.map(child => (
+                                <FileTreeItem
+                                    key={child.id}
+                                    node={child}
+                                    level={level + 1}
+                                    onSelect={onSelect}
+                                    selectedNode={selectedNode}
+                                    streamingFileId={streamingFileId}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- SKILL EDITOR MODAL ---
+         const SkillEditor = ({ skill, onClose, onSave }) => {
+            const [prompt, setPrompt] = useState(skill.prompt);
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay animate-fade-in p-6">
+                    <div className="bg-[#1e1e1e] border border-white/10 w-full max-w-4xl h-[85vh] rounded-xl shadow-2xl flex flex-col animate-slide-up">
+                        <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 bg-white/5 rounded-t-xl shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                                    <Icon name={skill.icon} size={20} className="text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white text-base">Configure {skill.label}</h3>
+                                    <p className="text-xs text-gray-400">Edit skill instructions and behavior</p>
+                                </div>
+                            </div>
+                            <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition">
+                                <Icon name="X" size={20} />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-hidden flex flex-col p-6">
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">System Prompt</label>
+                                <span className="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">{prompt.length} chars</span>
+                            </div>
+                            <textarea
+                                value={prompt}
+                                onChange={(e) => setPrompt(e.target.value)}
+                                className="flex-1 bg-[#121212] border border-white/10 rounded-lg p-5 text-sm text-gray-300 font-mono resize-none focus:outline-none focus:border-[#0A84FF] focus:ring-1 focus:ring-[#0A84FF] leading-relaxed mac-scrollbar shadow-inner"
+                                spellCheck="false"
+                                placeholder="Enter detailed skill instructions here..."
+                            />
+                        </div>
+                        <div className="p-4 border-t border-white/10 bg-white/5 rounded-b-xl flex justify-end gap-3 shrink-0">
+                            <button onClick={onClose} className="px-5 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 transition">Cancel</button>
+                            <button onClick={() => onSave(skill.id, prompt)} className="px-5 py-2.5 rounded-lg text-sm font-medium bg-[#0A84FF] text-white hover:bg-[#0071e3] transition shadow-md flex items-center gap-2">
+                                <Icon name="Send" size={14} /> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PreviewModal = ({ file, onClose, content, isStreaming }) => {
+            return (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in p-8">
+                    <div className="w-full h-full max-w-6xl bg-[#1e1e1e] border border-white/10 rounded-xl shadow-2xl flex flex-col animate-expand overflow-hidden">
+                        <div className="h-14 flex items-center justify-between px-6 border-b border-white/10 bg-[#2d2d2d]">
+                            <div className="flex items-center gap-3">
+                                <FileIcon type={file.type} selected={false} />
+                                <span className="font-mono text-sm text-white">{file.name}</span>
+                                {isStreaming && <span className="text-[10px] text-yellow-500 animate-pulse">● Live Preview</span>}
+                            </div>
+                            <button onClick={onClose} className="text-gray-400 hover:text-white transition bg-white/5 hover:bg-white/10 p-2 rounded-lg flex items-center gap-2 text-xs font-medium">
+                                <Icon name="Minimize2" size={14} /> Close Preview
+                            </button>
+                        </div>
+                        <div className="flex-1 p-8 overflow-auto mac-scrollbar bg-[#121212]">
+                            <CodeBlock code={content} language={file.type} className="text-sm font-mono leading-relaxed" isStreaming={isStreaming} />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APP PREVIEW COMPONENT (CLEAN - NO TOOLBAR) ---
+        const AppPreviewComponent = ({ hasNavbar }) => {
+            return (
+                <div className="w-full h-full bg-white text-gray-800 flex flex-col font-sans overflow-hidden">
+                    {/* Rendered Content - Full Height */}
+                    <div className="flex-1 flex flex-col overflow-auto relative">
+                        {hasNavbar && (
+                            <nav className="p-4 bg-gray-800 text-white flex justify-between items-center shadow-md animate-slide-up">
+                                <div className="font-bold text-lg">DeepAgent</div>
+                                <div className="flex gap-6 text-sm font-medium">
+                                    <a href="#" className="hover:text-blue-300 transition">Home</a>
+                                    <a href="#" className="hover:text-blue-300 transition">About</a>
+                                </div>
+                            </nav>
+                        )}
+                        <main className="p-8 max-w-2xl mx-auto w-full">
+                            <h1 className="text-3xl font-bold mb-4 text-gray-900">Hello World</h1>
+                            <p className="text-gray-600 mb-6 leading-relaxed">
+                                This is a live preview of the React component currently being generated by the Deep Agent.
+                                The filesystem is being updated in real-time.
+                            </p>
+                            <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all font-medium">
+                                Click me
+                            </button>
+                        </main>
+
+                        {/* Simulation Overlay if content is loading */}
+                        {!hasNavbar && (
+                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10 pointer-events-none">
+                                <span className="text-xs text-gray-400 font-mono">Waiting for Navbar...</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [selectedNode, setSelectedNode] = useState(null);
+            const [isAgentRunning, setIsAgentRunning] = useState(false);
+            const [inputText, setInputText] = useState('');
+            const [editingSkill, setEditingSkill] = useState(null);
+            const [previewExpanded, setPreviewExpanded] = useState(false);
+            const [activeRightTab, setActiveRightTab] = useState('filesystem');
+            const [streamingFileId, setStreamingFileId] = useState(null);
+            const [writingStatus, setWritingStatus] = useState(null);
+
+            // New States
+            const [rightPanelWidth, setRightPanelWidth] = useState(450);
+            const [isDragging, setIsDragging] = useState(false);
+            const [previewMode, setPreviewMode] = useState('code'); // 'code' | 'app'
+            const [hasGeneratedNavbar, setHasGeneratedNavbar] = useState(false);
+
+            const chatEndRef = useRef(null);
+
+            const handleMouseDown = (e) => {
+                e.preventDefault();
+                setIsDragging(true);
+            };
+
+            const handleMouseMove = useCallback((e) => {
+                if (isDragging) {
+                    const newWidth = window.innerWidth - e.clientX;
+                    if (newWidth > 300 && newWidth < 800) {
+                        setRightPanelWidth(newWidth);
+                    }
+                }
+            }, [isDragging]);
+
+            const handleMouseUp = useCallback(() => {
+                setIsDragging(false);
+            }, []);
+
+            useEffect(() => {
+                if (isDragging) {
+                    window.addEventListener('mousemove', handleMouseMove);
+                    window.addEventListener('mouseup', handleMouseUp);
+                } else {
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    window.removeEventListener('mouseup', handleMouseUp);
+                }
+                return () => {
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    window.removeEventListener('mouseup', handleMouseUp);
+                };
+            }, [isDragging, handleMouseMove, handleMouseUp]);
+
+
+            const [messages, setMessages] = useState([
+                { role: 'ai', text: 'System ready. Which skill should I deploy today?', timestamp: '10:41' },
+                { role: 'user', text: 'Analyze the project structure and build a new component.', timestamp: '10:42' },
+                { role: 'ai', text: 'Activating React Expert skill. Scanning context...', timestamp: '10:42', type: 'status' }
+            ]);
+
+            const memoryFiles = [
+                { id: 'm1', name: 'research_plan.json', type: 'json', date: 'Today, 10:42', size: '2 KB', content: '{\n  "goal": "Analyze competitors",\n  "steps": [\n    "Search Google",\n    "Scrape headers",\n    "Summarize"\n  ]\n}' },
+                { id: 'm2', name: 'agent_logs.md', type: 'markdown', date: 'Today, 10:40', size: '14 KB', content: '### Agent Logs\n\n- **[INFO]** Starting agent...\n- **[INFO]** Connected to OpenAI\n- **[DEBUG]** Token usage: `450`' },
+            ];
+
+            const initialTree = [
+                {
+                    id: 'root',
+                    name: 'react-project',
+                    type: 'folder',
+                    children: [
+                        {
+                            id: 'src',
+                            name: 'src',
+                            type: 'folder',
+                            children: [
+                                {
+                                    id: 'components',
+                                    name: 'components',
+                                    type: 'folder',
+                                    children: [
+                                        { id: 'btn', name: 'Button.tsx', type: 'tsx', size: '1 KB', content: 'export const Button = () => {\n  return <button>Click me</button>;\n};' },
+                                    ]
+                                },
+                                { id: 'app', name: 'App.tsx', type: 'tsx', size: '4 KB', content: 'import React from "react";\nimport { Button } from "./components/Button";\n\nexport default function App() {\n  return (\n    <div className="app">\n       <h1>Hello World</h1>\n       <Button />\n    </div>\n  );\n}' },
+                            ]
+                        },
+                        { id: 'pkg', name: 'package.json', type: 'json', size: '1 KB', content: '{\n  "name": "my-app",\n  "version": "1.0.0",\n  "dependencies": {\n    "react": "^18.2.0"\n  }\n}' },
+                    ]
+                }
+            ];
+
+            const [fileSystemTree, setFileSystemTree] = useState(initialTree);
+
+            const [skills, setSkills] = useState([
+                { id: 'web', label: 'Web Browsing', icon: 'Globe', prompt: 'You are an expert researcher. Use search tools to find accurate information.' },
+                { id: 'python', label: 'Python Sandbox', icon: 'Terminal', prompt: 'You are a Python runtime. Execute scripts for data analysis and calculation.' },
+                { id: 'react', label: 'React Expert', icon: 'Code', prompt: 'You are a senior React Native/Web engineer. Write clean, functional TSX code.' },
+                { id: 'review', label: 'Code Reviewer', icon: 'Zap', prompt: 'Analyze code for security flaws, performance issues, and best practices.' },
+            ]);
+
+            useEffect(() => {
+                if (!selectedNode && activeRightTab === 'filesystem') {
+                    setSelectedNode(fileSystemTree[0].children[0].children[1]);
+                }
+            }, [activeRightTab]);
+
+            const updateNodeContent = (tree, id, content) => {
+                return tree.map(node => {
+                    if (node.id === id) {
+                        return { ...node, content: content };
+                    }
+                    if (node.children) {
+                        return { ...node, children: updateNodeContent(node.children, id, content) };
+                    }
+                    return node;
+                });
+            };
+
+            const addFileToFolder = (tree, folderId, newFile) => {
+                return tree.map(node => {
+                    if (node.id === folderId) {
+                        return { ...node, children: [...node.children, newFile] };
+                    }
+                    if (node.children) {
+                        return { ...node, children: addFileToFolder(node.children, folderId, newFile) };
+                    }
+                    return node;
+                });
+            };
+
+            const simulateStreaming = async (fileId, finalContent) => {
+                setStreamingFileId(fileId);
+                let currentContent = "";
+                const chunks = finalContent.split(/(.{10})/g).filter(Boolean);
+
+                for (const chunk of chunks) {
+                    currentContent += chunk;
+                    setFileSystemTree(prev => updateNodeContent(prev, fileId, currentContent));
+                    setSelectedNode(prev => prev && prev.id === fileId ? { ...prev, content: currentContent } : prev);
+                    await new Promise(r => setTimeout(r, 50));
+                }
+                setStreamingFileId(null);
+            };
+
+            const handleSend = async () => {
+                if(!inputText.trim()) return;
+
+                const userMsg = inputText;
+                setMessages(prev => [...prev, { role: 'user', text: userMsg, timestamp: '10:45' }]);
+                setInputText('');
+                setIsAgentRunning(true);
+
+                setTimeout(async () => {
+                    setMessages(prev => [...prev, { role: 'ai', text: 'Using React Expert skill to create Navbar component.', timestamp: '10:45' }]);
+
+                    const navbarId = 'navbar';
+                    const navbarFile = { id: navbarId, name: 'Navbar.tsx', type: 'tsx', size: '2 KB', content: '' };
+                    setFileSystemTree(prev => addFileToFolder(prev, 'components', navbarFile));
+                    setActiveRightTab('filesystem');
+                    setPreviewMode('code'); // Force code view to see writing
+
+                    setSelectedNode(navbarFile);
+                    setWritingStatus("Writing Navbar.tsx...");
+
+                    const navbarCode = `import React from "react";\n\nexport const Navbar = () => {\n  return (\n    <nav className="p-4 bg-gray-800 text-white flex justify-between">\n      <div className="font-bold">DeepAgent</div>\n      <div className="flex gap-4">\n        <a href="/">Home</a>\n        <a href="/about">About</a>\n      </div>\n    </nav>\n  );\n};\n\nexport default Navbar;`;
+                    await simulateStreaming(navbarId, navbarCode);
+
+                    // Signal that navbar is done for the preview
+                    setHasGeneratedNavbar(true);
+
+                    await new Promise(r => setTimeout(r, 800));
+
+                    const appId = 'app';
+                    const appFile = fileSystemTree[0].children[0].children[1];
+
+                    setSelectedNode(appFile);
+                    setWritingStatus("Updating App.tsx...");
+
+                    const appCode = `import React from "react";\nimport { Button } from "./components/Button";\nimport { Navbar } from "./components/Navbar";\n\nexport default function App() {\n  return (\n    <div className="app">\n       <Navbar />\n       <main className="p-4">\n         <h1>Hello World</h1>\n         <Button />\n       </main>\n    </div>\n  );\n}`;
+                    await simulateStreaming(appId, appCode);
+
+                    setWritingStatus(null);
+                    setIsAgentRunning(false);
+                    setMessages(prev => [...prev, { role: 'ai', text: 'Component implementation complete.', timestamp: '10:46', type: 'status' }]);
+
+                    // Optional: Switch to App Preview automatically after completion
+                    setTimeout(() => setPreviewMode('app'), 1000);
+
+                }, 1000);
+            };
+
+            const handleSaveSkill = (id, newPrompt) => {
+                setSkills(prev => prev.map(s => s.id === id ? { ...s, prompt: newPrompt } : s));
+                setEditingSkill(null);
+            };
+
+            const handleNodeSelect = (node) => {
+                setSelectedNode(node);
+                setPreviewMode('code'); // Switch back to code when a file is clicked
+            };
+
+            useEffect(() => {
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [messages]);
+
+            return (
+                <div className="mac-window flex overflow-hidden text-gray-200 font-sans selection:bg-[#0A84FF] selection:text-white relative"
+                     style={{ cursor: isDragging ? 'col-resize' : 'default' }}>
+
+                    {/* --- SIDEBAR (Reduced Width) --- */}
+                    <div className="w-[220px] mac-sidebar flex flex-col shrink-0 pt-6">
+                        <div className="px-4 mb-6">
+                            <div className="relative group">
+                                <Icon name="Search" size={13} className="absolute left-3 top-2 text-gray-500 group-focus-within:text-[#0A84FF] transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search"
+                                    className="mac-input w-full rounded-lg py-1.5 pl-9 pr-2 text-xs font-medium"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-3 space-y-6 mac-scrollbar pb-4">
+                            <div>
+                                <div className="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                    <Icon name="History" size={10} /> History
+                                </div>
+                                <div className="space-y-0.5">
+                                    <div className="group flex flex-col px-3 py-2 rounded-md hover:bg-white/5 cursor-pointer transition-colors">
+                                        <span className="text-xs font-medium text-gray-300 group-hover:text-white truncate">React Component Gen</span>
+                                        <span className="text-[10px] text-gray-600 group-hover:text-gray-500">Just now</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* SKILLS SECTION */}
+                            <div>
+                                <div className="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                    <Icon name="Zap" size={10} /> Skills
+                                </div>
+                                {skills.map(skill => (
+                                    <div
+                                        key={skill.id}
+                                        onClick={() => setEditingSkill(skill)}
+                                        className="group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer text-gray-400 hover:bg-white/10 hover:text-white transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Icon name={skill.icon} size={15} />
+                                            <span className="text-[13px]">{skill.label}</span>
+                                        </div>
+                                        <Icon name="Edit" size={12} className="opacity-0 group-hover:opacity-50" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="p-4 border-t border-white/5">
+                            <SidebarItem icon="Settings" label="Settings" />
+                        </div>
+                    </div>
+
+                    {/* --- MAIN CONTENT --- */}
+                    <div className="flex-1 flex flex-row bg-transparent overflow-hidden">
+
+                        {/* CHAT AREA (Flexible Width) */}
+                        <div className="flex-1 flex flex-col min-w-[400px] border-r border-white/10 bg-[#1e1e1e]/40 backdrop-blur-sm relative">
+                            <div className="h-16 border-b border-white/10 flex items-center justify-between px-8 bg-[#2d2d2d]/20 backdrop-blur-md">
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-white tracking-tight">Deep Research Session</span>
+                                    <span className="text-[11px] text-gray-400 flex items-center gap-2 mt-0.5">
+                                        <span className={`w-1.5 h-1.5 rounded-full ${isAgentRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></span>
+                                        {isAgentRunning ? 'Running...' : 'Idle'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    {writingStatus && (
+                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full animate-fade-in">
+                                            <Icon name="PenTool" size={12} className="text-yellow-400 animate-bounce" />
+                                            <span className="text-[10px] font-mono text-yellow-200">{writingStatus}</span>
+                                        </div>
+                                    )}
+                                    <button className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                                        <Icon name="LayoutList" size={18} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-8 space-y-6 mac-scrollbar">
+                                {messages.map((msg, i) => (
+                                    <MessageBubble key={i} msg={msg} />
+                                ))}
+                                {isAgentRunning && <ThinkingBubble />}
+                                <div ref={chatEndRef} />
+                            </div>
+
+                            <div className="p-6">
+                                <div className="bg-[#3a3a3c]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-1.5 flex items-center shadow-2xl relative focus-within:ring-2 focus-within:ring-[#0A84FF]/50 transition-all max-w-4xl mx-auto">
+                                    <button className="p-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition">
+                                        <Icon name="Folder" size={20} />
+                                    </button>
+                                    <input
+                                        type="text"
+                                        value={inputText}
+                                        onChange={(e) => setInputText(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                                        placeholder="Ask the agent to use a skill..."
+                                        className="bg-transparent flex-1 px-3 py-2 outline-none text-base text-white placeholder-gray-500"
+                                    />
+                                    <button
+                                        onClick={handleSend}
+                                        className={`p-2 rounded-xl transition-all duration-200 ${inputText.trim() ? 'bg-[#0A84FF] text-white shadow-md transform scale-100' : 'bg-transparent text-gray-500 scale-95'}`}
+                                    >
+                                        <Icon name="ArrowUp" size={20} strokeWidth={3} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* --- RESIZABLE RIGHT PANEL --- */}
+                        <div
+                            className="flex flex-col bg-[#1e1e1e]/60 backdrop-blur-xl border-l border-white/5 relative"
+                            style={{ width: rightPanelWidth }}
+                        >
+                            {/* Draggable Handle */}
+                            <div
+                                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-50 resizer-handle hover:bg-blue-500/50"
+                                onMouseDown={handleMouseDown}
+                            ></div>
+
+                            {/* Header with View Toggle */}
+                            <div className="h-16 flex items-center px-4 border-b border-white/10 bg-white/5 shrink-0 justify-between">
+                                {/* HIDE MEMORY/FS TOGGLE IN APP MODE */}
+                                {previewMode !== 'app' ? (
+                                    <div className="flex bg-black/20 p-1 rounded-lg border border-white/5 mr-4">
+                                        <button
+                                            onClick={() => setActiveRightTab('memory')}
+                                            className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${activeRightTab === 'memory' ? 'bg-[#3a3a3c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+                                        >
+                                            Memory
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveRightTab('filesystem')}
+                                            className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${activeRightTab === 'filesystem' ? 'bg-[#3a3a3c] text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}
+                                        >
+                                            Filesystem
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-2">Live Preview</div>
+                                )}
+
+                                {/* Preview Toggle (Code vs App) */}
+                                {activeRightTab === 'filesystem' && (
+                                    <div className="flex bg-black/20 p-1 rounded-lg border border-white/5">
+                                        <button
+                                            onClick={() => setPreviewMode('code')}
+                                            className={`p-1.5 rounded-md transition-all ${previewMode === 'code' ? 'bg-[#3a3a3c] text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                            title="Code View"
+                                        >
+                                            <Icon name="Code" size={14} />
+                                        </button>
+                                        <button
+                                            onClick={() => setPreviewMode('app')}
+                                            className={`p-1.5 rounded-md transition-all ${previewMode === 'app' ? 'bg-[#3a3a3c] text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                            title="Live App Preview"
+                                        >
+                                            <Icon name="Eye" size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Content Area */}
+                            <div className="flex-1 flex flex-col overflow-hidden relative">
+
+                                {/* 1. APP PREVIEW MODE */}
+                                {activeRightTab === 'filesystem' && previewMode === 'app' ? (
+                                    <div className="flex-1 bg-white animate-fade-in overflow-hidden">
+                                        <AppPreviewComponent hasNavbar={hasGeneratedNavbar} />
+                                    </div>
+                                ) : (
+                                    /* 2. CODE/FILE MODE (Existing logic) */
+                                    <>
+                                        {/* File List */}
+                                        <div className="flex-1 overflow-y-auto p-3 mac-scrollbar min-h-0">
+                                            <div className="space-y-1">
+                                                {activeRightTab === 'filesystem' ? (
+                                                    fileSystemTree.map(node => (
+                                                        <FileTreeItem
+                                                            key={node.id}
+                                                            node={node}
+                                                            level={0}
+                                                            onSelect={handleNodeSelect}
+                                                            selectedNode={selectedNode}
+                                                            streamingFileId={streamingFileId}
+                                                        />
+                                                    ))
+                                                ) : (
+                                                    memoryFiles.map((file) => (
+                                                        <div
+                                                            key={file.id}
+                                                            onClick={() => setSelectedNode(file)}
+                                                            className={`group flex items-center px-4 py-3 rounded-lg cursor-default text-xs transition-all ${
+                                                                selectedNode?.id === file.id
+                                                                ? 'bg-[#0058D0] text-white shadow-md'
+                                                                : 'text-gray-300 hover:bg-white/5'
+                                                            }`}
+                                                        >
+                                                            <div className="mr-3 opacity-90">
+                                                                <FileIcon type={file.type} selected={selectedNode?.id === file.id} />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className={`font-medium truncate text-sm ${selectedNode?.id === file.id ? 'text-white' : 'text-gray-200'}`}>{file.name}</div>
+                                                                <div className={`flex justify-between mt-1 ${selectedNode?.id === file.id ? 'text-blue-200' : 'text-gray-500'}`}>
+                                                                    <span>{file.type}</span>
+                                                                    <span>{file.size}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Code Preview Pane */}
+                                        <div className="h-2/5 border-t border-white/10 bg-[#121212]/50 p-5 flex flex-col relative group transition-all shrink-0">
+                                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                                            <div className="flex justify-between items-center mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">PREVIEW</h3>
+                                                    {streamingFileId && streamingFileId === selectedNode?.id && (
+                                                        <span className="flex h-2 w-2 relative">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    onClick={() => setPreviewExpanded(true)}
+                                                    className="text-gray-500 hover:text-white transition opacity-0 group-hover:opacity-100 p-1 bg-white/5 rounded-md"
+                                                    title="Expand Preview"
+                                                >
+                                                    <Icon name="Maximize2" size={14} />
+                                                </button>
+                                            </div>
+
+                                            <div
+                                                className="flex-1 bg-[#1e1e1e] rounded-lg border border-white/10 p-0 overflow-hidden shadow-inner select-none cursor-pointer hover:border-white/20 transition-colors"
+                                                onClick={() => setPreviewExpanded(true)}
+                                            >
+                                                <div
+                                                    key={selectedNode?.id}
+                                                    className="h-full overflow-hidden text-[10px] p-3 opacity-80 hover:opacity-100 transition-opacity file-switch-enter"
+                                                >
+                                                    {selectedNode && selectedNode.content !== undefined ? (
+                                                        <CodeBlock
+                                                            code={selectedNode.content}
+                                                            language={selectedNode.type}
+                                                            isStreaming={streamingFileId === selectedNode.id}
+                                                        />
+                                                    ) : (
+                                                        <div className="h-full flex items-center justify-center text-gray-600 italic">Select a file</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modals */}
+                    {editingSkill && (
+                        <SkillEditor
+                            skill={editingSkill}
+                            onClose={() => setEditingSkill(null)}
+                            onSave={handleSaveSkill}
+                        />
+                    )}
+
+                    {previewExpanded && selectedNode && (
+                        <PreviewModal
+                            file={selectedNode}
+                            content={selectedNode.content}
+                            onClose={() => setPreviewExpanded(false)}
+                            isStreaming={streamingFileId === selectedNode.id}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        const SidebarItem = ({ icon, label, active, onClick }) => (
+            <div onClick={onClick} className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-default transition-all duration-200 select-none group hover:bg-white/5 text-gray-400 hover:text-white">
+                <Icon name={icon} size={16} />
+                <span className="text-[13px] leading-none mt-0.5">{label}</span>
+            </div>
+        );
+
+        const MessageBubble = ({ msg }) => {
+            const isUser = msg.role === 'user';
+            if (isUser) {
+                return (
+                    <div className="flex justify-end animate-fade-in">
+                        <div className="bg-[#0A84FF] text-white px-5 py-3 rounded-[20px] rounded-tr-sm max-w-[70%] text-sm shadow-sm leading-relaxed tracking-wide">
+                            {msg.text}
+                        </div>
+                    </div>
+                );
+            }
+            return (
+                <div className="flex gap-4 animate-fade-in group">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shrink-0 flex items-center justify-center text-[10px] font-bold text-white border border-white/10 group-hover:scale-105 transition-transform">AI</div>
+                    <div className="flex flex-col gap-1.5 max-w-[85%]">
+                        <div className="bg-[#3a3a3c] border border-white/5 text-gray-100 px-5 py-3.5 rounded-[20px] rounded-tl-sm text-sm shadow-md leading-relaxed">
+                            {msg.text}
+                        </div>
+                        <span className="text-[11px] text-gray-500 ml-1 font-medium">{msg.timestamp}</span>
+                    </div>
+                </div>
+            );
+        };
+
+        const ThinkingBubble = () => (
+            <div className="flex gap-4 animate-fade-in">
+                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-50 shrink-0"></div>
+                 <div className="bg-[#3a3a3c]/50 px-5 py-4 rounded-[20px] rounded-tl-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                 </div>
+            </div>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
