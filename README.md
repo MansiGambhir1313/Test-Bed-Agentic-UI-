@@ -14,6 +14,32 @@ This platform enables you to build frontend applications by simply describing wh
 - **Sub-Agent Architecture** - Specialized agents for design and image research work alongside the main agent
 - **Vercel Deploy** - One-click deployment to Vercel for instant preview URLs
 
+## Screenshots
+
+### Starting a New Project
+
+![Starting a chat with a prompt](images/img.png)
+
+Begin by describing your application in natural language. The agent understands your requirements and starts planning the implementation.
+
+### Live Development in Progress
+
+![CodeCraft website in development](images/img_1.png)
+
+Watch as the agent works on your project. This example shows the "CodeCraft" website being built with real-time task tracking and progress updates.
+
+### Sub-Agent Architecture in Action
+
+![Designer sub-agent at work](images/img_2.png)
+
+Specialized sub-agents handle specific tasks. Here, the **designer** sub-agent is creating files while you can see the filesystem structure being built in real-time.
+
+### Final Result
+
+![CodeCraft website final result](images/img_3.png)
+
+The completed application preview. From concept to working website through simple conversation.
+
 ## Architecture
 
 ```
