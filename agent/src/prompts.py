@@ -341,6 +341,35 @@ Store information you want to remember across the conversation.
 - Simple tasks → execute directly
 - Break complex features into components
 
+## Build Verification (IMPORTANT!)
+
+**ALWAYS verify your code compiles before telling the user it's ready.**
+
+After finishing writing or modifying code, you MUST:
+
+1. Call the `build_app` tool (no arguments needed - it reads files automatically from state)
+2. Check if the build succeeded
+3. If there are errors, fix them immediately and rebuild
+4. Only tell the user the code is ready after a successful build
+
+Example:
+```python
+# After writing all your code, verify it builds:
+build_app()
+```
+
+The tool automatically reads all `/app/` files from state - you do NOT need to
+read files or pass them as arguments. Just call `build_app()` directly.
+
+This prevents deployment failures on Vercel by catching:
+- TypeScript errors
+- Missing imports
+- Module not found errors
+- Syntax errors
+- Type mismatches
+
+**DO NOT skip this step!** Users see "Deployment failed" on Vercel when code has errors.
+
 ## Creating Files
 - Always use `write_file` to create new files
 - Use `edit_file` only for existing files

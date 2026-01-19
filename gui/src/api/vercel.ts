@@ -154,6 +154,47 @@ export async function getDeploymentStatus(
 }
 
 /**
+ * Get deployment build logs/events
+ * Returns the build output which contains error messages
+ */
+export async function getDeploymentEvents(
+  deploymentId: string
+): Promise<string[]> {
+  try {
+    const response = await fetch(`/vercel-api/v2/deployments/${deploymentId}/events`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const events = await response.json();
+
+    // Extract text from build events
+    const logs: string[] = [];
+    if (Array.isArray(events)) {
+      for (const event of events) {
+        if (event.text) {
+          logs.push(event.text);
+        }
+        // Also capture payload text if present
+        if (event.payload?.text) {
+          logs.push(event.payload.text);
+        }
+      }
+    }
+
+    return logs;
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Assign an alias to a deployment
  * This creates a public URL like "my-project.vercel.app" for the deployment
  */
@@ -200,9 +241,36 @@ export async function waitForDeployment(
     }
 
     if (status.readyState === 'ERROR' || status.readyState === 'CANCELED') {
-      throw new Error(
-        status.error?.message || `Deployment ${status.readyState.toLowerCase()}`
+      // Fetch build logs to get the full error message
+      const buildLogs = await getDeploymentEvents(deploymentId);
+
+      // Look for error lines in the build logs
+      const errorLines = buildLogs.filter(line =>
+        line.toLowerCase().includes('error') ||
+        line.toLowerCase().includes('failed') ||
+        line.includes('ERR!') ||
+        line.includes('ERROR') ||
+        line.includes('TypeError') ||
+        line.includes('SyntaxError') ||
+        line.includes('ReferenceError') ||
+        line.includes('Module not found') ||
+        line.includes('Cannot find')
       );
+
+      // Build a comprehensive error message
+      let fullError = status.error?.message || `Deployment ${status.readyState.toLowerCase()}`;
+
+      if (errorLines.length > 0) {
+        // Take the last 30 error lines to capture the most relevant errors
+        const relevantErrors = errorLines.slice(-30).join('\n');
+        fullError = `${fullError}\n\nBuild output:\n${relevantErrors}`;
+      } else if (buildLogs.length > 0) {
+        // If no specific error lines found, take the last 20 lines of logs
+        const lastLogs = buildLogs.slice(-20).join('\n');
+        fullError = `${fullError}\n\nBuild output:\n${lastLogs}`;
+      }
+
+      throw new Error(fullError);
     }
 
     await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));

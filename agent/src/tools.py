@@ -1,10 +1,14 @@
 """Custom tools for the frontend agent."""
 
 import os
+import shutil
+import subprocess
+import tempfile
 from typing import Any, Literal
 
 import requests
-from langchain_core.tools import tool
+from langchain.tools import ToolRuntime
+from langchain_core.tools import StructuredTool, tool
 from markdownify import markdownify
 from tavily import TavilyClient
 
@@ -186,3 +190,188 @@ def fetch_url(url: str, timeout: int = 30) -> dict[str, Any]:
         }
     except Exception as e:
         return {"success": False, "error": f"Fetch URL error: {e!s}", "url": url}
+
+
+BUILD_APP_DESCRIPTION = """Build and verify the Next.js application to check for compilation errors.
+
+This tool automatically reads all files from the current state, writes them to a
+temporary directory, runs npm install and npm run build, and returns the build
+output including any errors.
+
+You do NOT need to read files before calling this tool - it has direct access
+to all files in the state.
+
+Returns:
+    Dictionary containing:
+    - success: Whether the build succeeded (boolean)
+    - install_output: Output from npm install
+    - build_output: Output from npm run build
+    - errors: List of error messages if build failed
+    - warnings: List of warning messages
+
+IMPORTANT: Always call this tool after finishing your code to verify:
+1. All dependencies can be installed
+2. TypeScript compiles without errors
+3. Next.js build succeeds
+4. No missing imports or type errors
+
+If the build fails, read the errors carefully and fix them before telling
+the user the code is ready."""
+
+
+def _build_app_impl(runtime: ToolRuntime) -> dict[str, Any]:
+    """Internal implementation of build_app that accesses files from state."""
+    # Get files directly from state - no need for agent to pass them
+    state_files = runtime.state.get("files", {})
+
+    if not state_files:
+        return {
+            "success": False,
+            "install_output": "",
+            "build_output": "",
+            "errors": ["No files found in state. Create some files first."],
+            "warnings": [],
+        }
+
+    temp_dir = None
+    try:
+        # Create temporary directory
+        temp_dir = tempfile.mkdtemp(prefix="nextjs-build-")
+
+        # Write files to temp directory
+        for file_path, file_data in state_files.items():
+            # Convert file data to string content
+            # State files have {"content": ["line1", "line2", ...], ...}
+            if isinstance(file_data, dict) and "content" in file_data:
+                content = "\n".join(file_data.get("content", []))
+            elif isinstance(file_data, str):
+                content = file_data
+            else:
+                continue
+
+            # Strip /app/ prefix if present
+            clean_path = file_path
+            if clean_path.startswith("/app/"):
+                clean_path = clean_path[5:]
+            elif clean_path.startswith("/"):
+                clean_path = clean_path[1:]
+
+            # Skip non-app files (like /memory/)
+            if file_path.startswith("/memory/"):
+                continue
+
+            # Create full path
+            full_path = os.path.join(temp_dir, clean_path)
+
+            # Create parent directories
+            parent_dir = os.path.dirname(full_path)
+            if parent_dir:
+                os.makedirs(parent_dir, exist_ok=True)
+
+            # Write file
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        # Check if package.json exists
+        package_json_path = os.path.join(temp_dir, "package.json")
+        if not os.path.exists(package_json_path):
+            return {
+                "success": False,
+                "install_output": "",
+                "build_output": "",
+                "errors": ["package.json not found. Cannot build without it."],
+                "warnings": [],
+            }
+
+        # Run npm install
+        install_result = subprocess.run(
+            ["npm", "install", "--legacy-peer-deps"],
+            cwd=temp_dir,
+            capture_output=True,
+            text=True,
+            timeout=120,  # 2 minute timeout for install
+        )
+
+        install_output = install_result.stdout + install_result.stderr
+
+        if install_result.returncode != 0:
+            return {
+                "success": False,
+                "install_output": install_output,
+                "build_output": "",
+                "errors": [f"npm install failed:\n{install_output}"],
+                "warnings": [],
+            }
+
+        # Run npm run build
+        build_result = subprocess.run(
+            ["npm", "run", "build"],
+            cwd=temp_dir,
+            capture_output=True,
+            text=True,
+            timeout=180,  # 3 minute timeout for build
+            env={**os.environ, "CI": "true"},  # Treat warnings as non-fatal
+        )
+
+        build_output = build_result.stdout + build_result.stderr
+
+        # Extract errors and warnings
+        errors = []
+        warnings = []
+
+        for line in build_output.split("\n"):
+            line_lower = line.lower()
+            if "error" in line_lower and ("ts(" in line or "typescript" in line_lower or "module not found" in line_lower or "cannot find" in line_lower):
+                errors.append(line.strip())
+            elif "warn" in line_lower:
+                warnings.append(line.strip())
+
+        success = build_result.returncode == 0
+
+        return {
+            "success": success,
+            "install_output": install_output[-2000:] if len(install_output) > 2000 else install_output,
+            "build_output": build_output[-5000:] if len(build_output) > 5000 else build_output,
+            "errors": errors if not success else [],
+            "warnings": warnings[:10],
+        }
+
+    except subprocess.TimeoutExpired:
+        return {
+            "success": False,
+            "install_output": "",
+            "build_output": "",
+            "errors": ["Build timed out. The build process took too long."],
+            "warnings": [],
+        }
+    except FileNotFoundError:
+        return {
+            "success": False,
+            "install_output": "",
+            "build_output": "",
+            "errors": ["npm not found. Make sure Node.js and npm are installed."],
+            "warnings": [],
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "install_output": "",
+            "build_output": "",
+            "errors": [f"Build error: {e!s}"],
+            "warnings": [],
+        }
+    finally:
+        # Clean up temp directory
+        if temp_dir and os.path.exists(temp_dir):
+            try:
+                shutil.rmtree(temp_dir)
+            except Exception:
+                pass  # Ignore cleanup errors
+
+
+# Create the build_app tool using StructuredTool to get runtime access
+build_app = StructuredTool.from_function(
+    name="build_app",
+    description=BUILD_APP_DESCRIPTION,
+    func=_build_app_impl,
+)

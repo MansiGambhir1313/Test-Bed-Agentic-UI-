@@ -116,7 +116,7 @@ export function ThreadView(): JSX.Element {
   }, [setSelectedNode]);
 
   const handleAskToFix = useCallback((error: string) => {
-    const message = `The Vercel deployment failed with the following error:\n\n\`\`\`\n${error}\n\`\`\`\n\nPlease fix this error so the preview can be deployed successfully.`;
+    const message = `The Vercel deployment failed with the following error:\n\n\`\`\`\n${error}\n\`\`\`\n\nPlease fix this error so the preview can be deployed successfully.\n\nIf these logs are not sufficient to understand the issue, use the \`build_app\` tool to run a local build and get more detailed error messages.`;
     sendMessage(message);
   }, [sendMessage]);
 

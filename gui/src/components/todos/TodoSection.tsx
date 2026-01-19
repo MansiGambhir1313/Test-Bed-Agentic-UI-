@@ -71,9 +71,9 @@ export function TodoSection({ title, todos, status, icon, compact = false }: Tod
 
       {/* Task Items */}
       <div className={compact ? 'space-y-1' : 'space-y-2'}>
-        {todos.map((todo) => (
+        {todos.map((todo, idx) => (
           <TaskItem
-            key={todo.id}
+            key={todo.id || `todo_${status}_${idx}`}
             todo={todo}
             status={status}
             compact={compact}

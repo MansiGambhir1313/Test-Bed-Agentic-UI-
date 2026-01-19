@@ -1107,30 +1107,182 @@ export function VercelPreview({
   // Deploy UI (idle, loading, error states)
   const isError = state === 'error';
 
+  // Error state - clean, elegant design
+  if (isError) {
+    return (
+      <div
+        className="w-full h-full flex items-center justify-center relative overflow-hidden"
+        style={{
+          background: '#0c0c0e',
+        }}
+      >
+        {/* Subtle noise texture overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Soft ambient glow */}
+        <div
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] opacity-40"
+          style={{
+            background: 'radial-gradient(ellipse, rgba(251, 191, 36, 0.08) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+          }}
+        />
+
+        <div className="text-center max-w-md px-8 relative z-10">
+          {/* Minimal icon */}
+          <div className="mb-8">
+            <div
+              className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center"
+              style={{
+                background: 'linear-gradient(145deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.03) 100%)',
+                border: '1px solid rgba(251, 191, 36, 0.15)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+              }}
+            >
+              <Icon name="AlertTriangle" className="w-7 h-7 text-amber-400/80" />
+            </div>
+          </div>
+
+          {/* Title */}
+          <h3
+            className="text-lg font-medium mb-3 tracking-tight"
+            style={{
+              color: '#e8e4dd',
+              fontFamily: "'Inter', -apple-system, sans-serif",
+            }}
+          >
+            Deployment failed
+          </h3>
+
+          {/* Error message box */}
+          {error && (
+            <div
+              className="mb-8 text-left max-h-[140px] overflow-y-auto rounded-xl"
+              style={{
+                background: 'rgba(251, 191, 36, 0.03)',
+                border: '1px solid rgba(251, 191, 36, 0.08)',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(251, 191, 36, 0.2) transparent',
+              }}
+            >
+              <pre
+                className="p-4 text-xs leading-relaxed whitespace-pre-wrap break-words"
+                style={{
+                  fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+                  color: 'rgba(251, 191, 36, 0.7)',
+                }}
+              >
+                {error}
+              </pre>
+            </div>
+          )}
+
+          {/* Action buttons - stacked, same width */}
+          <div className="space-y-3 max-w-[220px] mx-auto">
+            {onAskToFix && error && (
+              <button
+                onClick={() => onAskToFix(error)}
+                className="w-full group relative"
+                style={{
+                  transform: 'translateZ(0)',
+                }}
+              >
+                <div
+                  className="px-5 py-3 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-200 group-hover:brightness-110 group-active:brightness-95"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.08) 100%)',
+                    border: '1px solid rgba(251, 191, 36, 0.2)',
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+                  }}
+                >
+                  <Icon name="Sparkles" className="w-4 h-4 text-amber-400/90 transition-transform duration-200 group-hover:rotate-12" />
+                  <span
+                    className="text-sm font-medium"
+                    style={{
+                      color: '#fbbf24',
+                      fontFamily: "'Inter', -apple-system, sans-serif",
+                    }}
+                  >
+                    Ask to Fix
+                  </span>
+                </div>
+              </button>
+            )}
+
+            <button
+              onClick={() => deploy(files)}
+              disabled={!hasFiles}
+              className="w-full group"
+              style={{
+                transform: 'translateZ(0)',
+              }}
+            >
+              <div
+                className={`px-5 py-3 rounded-xl flex items-center justify-center gap-2.5 transition-all duration-200 ${
+                  hasFiles ? 'group-hover:brightness-125 group-active:brightness-90' : 'opacity-40 cursor-not-allowed'
+                }`}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                }}
+              >
+                <Icon name="RefreshCw" className="w-4 h-4 text-white/50" />
+                <span
+                  className="text-sm font-medium"
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontFamily: "'Inter', -apple-system, sans-serif",
+                  }}
+                >
+                  Try Again
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* File count - subtle */}
+          <div className="mt-8">
+            <span
+              className="text-xs"
+              style={{
+                color: 'rgba(255, 255, 255, 0.25)',
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
+              {Object.keys(files).length} files ready
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Idle and loading states
   return (
     <div
       className="w-full h-full flex items-center justify-center relative overflow-hidden"
       style={{
-        background: isError
-          ? 'radial-gradient(ellipse at 50% 30%, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 1) 60%)'
-          : isLoading
-            ? 'radial-gradient(ellipse at 50% 30%, rgba(59, 130, 246, 0.08) 0%, rgba(15, 23, 42, 1) 60%)'
-            : 'radial-gradient(ellipse at 50% 30%, rgba(100, 116, 139, 0.05) 0%, rgba(15, 23, 42, 1) 60%)',
+        background: isLoading
+          ? 'radial-gradient(ellipse at 50% 30%, rgba(59, 130, 246, 0.08) 0%, rgba(15, 23, 42, 1) 60%)'
+          : 'radial-gradient(ellipse at 50% 30%, rgba(100, 116, 139, 0.05) 0%, rgba(15, 23, 42, 1) 60%)',
       }}
     >
       {/* Subtle grid for idle/loading */}
-      {!isError && (
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(100, 116, 139, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(100, 116, 139, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px',
-          }}
-        />
-      )}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(100, 116, 139, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(100, 116, 139, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }}
+      />
 
       <div className="text-center max-w-sm px-6 relative z-10">
         {/* Status icon with effects */}
@@ -1139,43 +1291,29 @@ export function VercelPreview({
           <div
             className={`absolute inset-0 rounded-full ${isLoading ? 'animate-pulse' : ''}`}
             style={{
-              background: isError
-                ? 'radial-gradient(circle, rgba(239, 68, 68, 0.2) 0%, transparent 70%)'
-                : isLoading
-                  ? 'radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%)'
-                  : 'radial-gradient(circle, rgba(100, 116, 139, 0.1) 0%, transparent 70%)',
+              background: isLoading
+                ? 'radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(100, 116, 139, 0.1) 0%, transparent 70%)',
             }}
           />
           {/* Icon container */}
           <div
             className="absolute inset-2 rounded-full flex items-center justify-center"
             style={{
-              background: isError
-                ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(185, 28, 28, 0.1) 100%)'
-                : isLoading
-                  ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%)'
-                  : 'linear-gradient(135deg, rgba(51, 65, 85, 0.5) 0%, rgba(30, 41, 59, 0.5) 100%)',
-              boxShadow: isError
-                ? '0 0 30px rgba(239, 68, 68, 0.2), inset 0 1px 1px rgba(255,255,255,0.05)'
-                : isLoading
-                  ? '0 0 30px rgba(59, 130, 246, 0.2), inset 0 1px 1px rgba(255,255,255,0.05)'
-                  : '0 4px 20px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)',
-              border: isError
-                ? '1px solid rgba(239, 68, 68, 0.3)'
-                : isLoading
-                  ? '1px solid rgba(59, 130, 246, 0.3)'
-                  : '1px solid rgba(100, 116, 139, 0.2)',
+              background: isLoading
+                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(51, 65, 85, 0.5) 0%, rgba(30, 41, 59, 0.5) 100%)',
+              boxShadow: isLoading
+                ? '0 0 30px rgba(59, 130, 246, 0.2), inset 0 1px 1px rgba(255,255,255,0.05)'
+                : '0 4px 20px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)',
+              border: isLoading
+                ? '1px solid rgba(59, 130, 246, 0.3)'
+                : '1px solid rgba(100, 116, 139, 0.2)',
             }}
           >
             <Icon
               name={STATE_ICONS[state]}
-              className={`w-8 h-8 ${
-                isError
-                  ? 'text-red-400'
-                  : isLoading
-                    ? 'text-blue-400 animate-spin'
-                    : 'text-slate-400'
-              }`}
+              className={`w-8 h-8 ${isLoading ? 'text-blue-400 animate-spin' : 'text-slate-400'}`}
             />
           </div>
         </div>
@@ -1185,34 +1323,11 @@ export function VercelPreview({
           className="text-base font-medium mb-5"
           style={{
             fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
-            color: isError ? '#f87171' : '#e2e8f0',
+            color: '#e2e8f0',
           }}
         >
           {STATE_MESSAGES[state]}
         </p>
-
-        {/* Error message */}
-        {isError && error && (
-          <div className="mb-5">
-            <div
-              className="rounded-xl p-4 mb-4 text-left"
-              style={{
-                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.05) 100%)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-              }}
-            >
-              <p
-                className="text-xs break-words"
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  color: '#fca5a5',
-                }}
-              >
-                {error}
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* When streaming: only show waiting message */}
         {isStreaming ? (
@@ -1242,23 +1357,9 @@ export function VercelPreview({
           </div>
         ) : (
           <>
-            {/* Action buttons - uniform width */}
-            {(state === 'idle' || isError) && (
-              <div className="flex flex-col items-center gap-3 mb-4 w-full max-w-[220px] mx-auto">
-                {isError && onAskToFix && error && (
-                  <button
-                    onClick={() => onAskToFix(error)}
-                    className="w-full px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
-                    style={{
-                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                      boxShadow: '0 4px 20px rgba(245, 158, 11, 0.3)',
-                      color: 'white',
-                    }}
-                  >
-                    <Icon name="MessageSquare" className="w-4 h-4" />
-                    Ask to Fix This Error
-                  </button>
-                )}
+            {/* Action button for idle state */}
+            {state === 'idle' && (
+              <div className="flex flex-col items-center gap-3 mb-4 w-full max-w-[240px] mx-auto">
                 {hasFiles ? (
                   <button
                     onClick={() => deploy(files)}
@@ -1270,7 +1371,7 @@ export function VercelPreview({
                     }}
                   >
                     <Icon name="Upload" className="w-4 h-4" />
-                    {isError ? 'Try Again' : 'Deploy to Vercel'}
+                    Deploy to Vercel
                   </button>
                 ) : (
                   <button

@@ -50,7 +50,7 @@ export function useChat({ assistantId, onHistoryRevalidate }: UseChatOptions) {
           optimisticValues: (prev) => ({
             messages: [...(prev.messages ?? []), newMessage],
           }),
-          config: { recursion_limit: 100 },
+          config: { recursion_limit: 1000 },
         }
       );
 

@@ -117,6 +117,14 @@ const TOOL_STYLES: Record<string, {
     border: 'border-orange-400/40',
     glow: 'shadow-orange-500/25'
   },
+  build_app: {
+    icon: 'Hammer',
+    label: 'Building',
+    accent: 'text-lime-300',
+    bg: 'bg-lime-500/20',
+    border: 'border-lime-400/40',
+    glow: 'shadow-lime-500/25'
+  },
   glob: {
     icon: 'FileSearch',
     label: 'Finding',
@@ -164,6 +172,131 @@ function getFileIcon(filePath: string): IconName {
     html: 'FileCode',
   };
   return iconMap[ext || ''] || 'File';
+}
+
+// Parse build_app result
+interface BuildAppResult {
+  success: boolean;
+  install_output?: string;
+  build_output?: string;
+  errors?: string[];
+  warnings?: string[];
+}
+
+function parseBuildAppResult(result: string): BuildAppResult | null {
+  try {
+    const parsed = JSON.parse(result);
+    if (typeof parsed === 'object' && parsed !== null && 'success' in parsed) {
+      return parsed as BuildAppResult;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Build app result component
+function BuildAppResultDisplay({ result }: { result: BuildAppResult }): JSX.Element {
+  const { success, errors, warnings, build_output } = result;
+
+  return (
+    <div className="space-y-3">
+      {/* Status badge */}
+      <div className="flex items-center gap-2">
+        <div className={`
+          flex items-center gap-2 px-3 py-1.5 rounded-full
+          ${success
+            ? 'bg-emerald-500/15 border border-emerald-500/30'
+            : 'bg-red-500/15 border border-red-500/30'
+          }
+        `}>
+          <Icon
+            name={success ? 'CheckCircle' : 'XCircle'}
+            size={14}
+            className={success ? 'text-emerald-400' : 'text-red-400'}
+          />
+          <span className={`text-xs font-medium ${success ? 'text-emerald-300' : 'text-red-300'}`}>
+            {success ? 'Build Successful' : 'Build Failed'}
+          </span>
+        </div>
+      </div>
+
+      {/* Errors */}
+      {errors && errors.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Icon name="AlertCircle" size={12} className="text-red-400" />
+            <span className="text-[10px] uppercase tracking-widest text-red-400/80 font-medium">
+              Errors ({errors.length})
+            </span>
+          </div>
+          <div className="space-y-1.5 max-h-[200px] overflow-y-auto mac-scrollbar">
+            {errors.map((error, idx) => (
+              <div
+                key={idx}
+                className="p-2.5 bg-red-950/30 rounded-lg border border-red-500/20"
+              >
+                <pre className="text-[11px] font-mono text-red-200 whitespace-pre-wrap break-all">
+                  {error}
+                </pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Warnings */}
+      {warnings && warnings.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Icon name="AlertTriangle" size={12} className="text-amber-400" />
+            <span className="text-[10px] uppercase tracking-widest text-amber-400/80 font-medium">
+              Warnings ({warnings.length})
+            </span>
+          </div>
+          <div className="space-y-1 max-h-[150px] overflow-y-auto mac-scrollbar">
+            {warnings.slice(0, 5).map((warning, idx) => (
+              <div
+                key={idx}
+                className="px-2.5 py-1.5 bg-amber-950/20 rounded-lg border border-amber-500/15"
+              >
+                <pre className="text-[10px] font-mono text-amber-200/80 whitespace-pre-wrap break-all">
+                  {warning}
+                </pre>
+              </div>
+            ))}
+            {warnings.length > 5 && (
+              <span className="text-[10px] text-amber-400/60 pl-1">
+                +{warnings.length - 5} more warnings
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Build output (collapsible) */}
+      {build_output && build_output.length > 100 && (
+        <details className="group">
+          <summary className="flex items-center gap-2 cursor-pointer select-none">
+            <Icon name="Terminal" size={12} className="text-gray-400" />
+            <span className="text-[10px] uppercase tracking-widest text-gray-400/80 font-medium">
+              Build Output
+            </span>
+            <Icon
+              name="ChevronRight"
+              size={12}
+              className="text-gray-500 transition-transform group-open:rotate-90"
+            />
+          </summary>
+          <div className="mt-2 p-3 bg-black/40 rounded-lg border border-white/5 max-h-[200px] overflow-y-auto mac-scrollbar">
+            <pre className="text-[10px] font-mono text-gray-400 whitespace-pre-wrap break-all">
+              {build_output}
+            </pre>
+          </div>
+        </details>
+      )}
+    </div>
+  );
 }
 
 // Parse todo statuses
@@ -422,17 +555,38 @@ function ToolActivityItem({ activity, isLast }: ToolActivityItemProps): JSX.Elem
               )}
             </div>
           ) : result ? (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Icon name="ArrowRight" size={12} className="text-emerald-400" />
-                <span className="text-[11px] uppercase tracking-widest text-emerald-400/80 font-medium">Result</span>
-              </div>
-              <div className="p-3 bg-black/30 rounded-xl border border-white/5 max-h-[150px] overflow-y-auto mac-scrollbar">
-                <pre className="text-[11px] font-mono text-gray-300 whitespace-pre-wrap break-all leading-relaxed">
-                  {result.length > 500 ? result.slice(0, 500) + `\n... [${Math.ceil(result.length / 1024)}KB]` : result}
-                </pre>
-              </div>
-            </div>
+            (() => {
+              // Special handling for build_app results
+              if (toolCall.name === 'build_app') {
+                const buildResult = parseBuildAppResult(result);
+                if (buildResult) {
+                  return (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Icon name="Hammer" size={12} className="text-lime-400" />
+                        <span className="text-[11px] uppercase tracking-widest text-lime-400/80 font-medium">Build Result</span>
+                      </div>
+                      <BuildAppResultDisplay result={buildResult} />
+                    </div>
+                  );
+                }
+              }
+
+              // Default result rendering
+              return (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon name="ArrowRight" size={12} className="text-emerald-400" />
+                    <span className="text-[11px] uppercase tracking-widest text-emerald-400/80 font-medium">Result</span>
+                  </div>
+                  <div className="p-3 bg-black/30 rounded-xl border border-white/5 max-h-[150px] overflow-y-auto mac-scrollbar">
+                    <pre className="text-[11px] font-mono text-gray-300 whitespace-pre-wrap break-all leading-relaxed">
+                      {result.length > 500 ? result.slice(0, 500) + `\n... [${Math.ceil(result.length / 1024)}KB]` : result}
+                    </pre>
+                  </div>
+                </div>
+              );
+            })()
           ) : null}
 
           {/* Args section (only if no result, not todos/task, for debugging) */}
@@ -569,7 +723,7 @@ function TodoListExpanded({ todos }: { todos: unknown[] }): JSX.Element {
 
           return (
             <div
-              key={idx}
+              key={`${todo.content}_${status}_${idx}`}
               className={`
                 flex items-start gap-2 px-2.5 py-1.5 rounded-lg
                 ${config.bg} border ${config.border}

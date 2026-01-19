@@ -173,8 +173,9 @@ export function useVercelDeploy(
         break;
       case 'ERROR':
       case 'CANCELED':
+        // Just update state - let waitForDeployment handle the error
+        // with full build logs
         setState('error');
-        setError(status.error?.message || 'Deployment failed');
         break;
     }
   }, [projectName, saveDeployment]);

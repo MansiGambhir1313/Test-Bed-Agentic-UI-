@@ -10,7 +10,7 @@ from langchain_anthropic import ChatAnthropic
 from src.prompts import SYSTEM_PROMPT
 from src.skills import SkillsMiddleware
 from src.subagents import SUBAGENTS
-from src.tools import fetch_url, http_request, web_search
+from src.tools import build_app, fetch_url, http_request, web_search
 
 # Skills directory path
 SKILLS_DIR = Path(__file__).parent.parent / "skills"
@@ -27,7 +27,7 @@ def create_frontend_agent():
 
     No persistent filesystem - everything is per-session and virtual.
     """
-    tools = [http_request, web_search, fetch_url]
+    tools = [http_request, web_search, fetch_url, build_app]
 
     # Single StateBackend - paths are preserved as-is
     def backend_factory(rt):
