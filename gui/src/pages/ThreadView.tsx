@@ -7,11 +7,17 @@ import { useChat } from '../hooks/useChat';
 import { useThreadHistory } from '../hooks/useThreadHistory';
 import { useFileChangeDetection } from '../hooks/useFileChangeDetection';
 import { useFileTree } from '../hooks/useFileTree';
+import { useDeploymentUrl } from '../providers/ClientProvider';
 import { normalizeFiles, getMessageText } from '../types';
 import type { Message } from '../types';
 
 export function ThreadView(): JSX.Element {
   const { threadId: paramThreadId } = useParams<{ threadId: string }>();
+  const deploymentUrl = useDeploymentUrl();
+  const isBackendMisconfigured =
+    typeof window !== 'undefined' &&
+    !window.location.origin.includes('localhost') &&
+    (deploymentUrl.includes('localhost') || deploymentUrl.startsWith('http://127.'));
 
   const {
     threads,
@@ -122,6 +128,11 @@ export function ThreadView(): JSX.Element {
 
   return (
     <div className="mac-window flex overflow-hidden text-gray-200 font-sans selection:bg-primary selection:text-white relative">
+      {isBackendMisconfigured && (
+        <div className="absolute top-0 left-0 right-0 z-50 bg-amber-500/90 text-black text-center py-2 px-4 text-sm font-medium">
+          Backend not configured. Set <code className="bg-black/10 px-1 rounded">VITE_API_URL</code> in Vercel and redeploy, or add <code className="bg-black/10 px-1 rounded">?api=YOUR_AGENT_URL</code> to this page.
+        </div>
+      )}
       {/* Sidebar */}
       <Sidebar
         threads={threads}

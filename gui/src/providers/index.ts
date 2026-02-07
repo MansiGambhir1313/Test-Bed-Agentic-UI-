@@ -1,1 +1,1 @@
-export { ClientProvider, useClient } from './ClientProvider';
+export { ClientProvider, useClient, useDeploymentUrl } from './ClientProvider';
