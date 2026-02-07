@@ -1,0 +1,14 @@
+{
+  "buildCommand": "cd gui && npm ci && npm run build",
+  "outputDirectory": "gui/dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
+    { "source": "/favicon.ico", "destination": "/favicon.svg", "permanent": false }
+  ],
+  "headers": [
+    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
+  ]
+}
