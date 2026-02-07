@@ -12,10 +12,10 @@ You’ll deploy the **agent** on Railway, then point **Vercel** at it.
 2. Sign in with **GitHub**.
 3. Click **New Project** → **Deploy from GitHub repo**.
 4. Choose repo: **MansiGambhir1313/Test-Bed-Agentic-UI-** (or your repo name).
-5. After the first deployment, you’ll have one service. We want the **agent** only:
+5. After the first deployment, you’ll have one service. Configure it for the **agent**:
    - Click the new service → **Settings** (or the gear icon).
-   - **Root Directory:** set to **`agent`** (type exactly: `agent`).
-   - **Builder:** leave as **Dockerfile** (Railway will use `agent/Dockerfile`).
+   - **Root Directory:** leave **empty** (so Railway builds from repo root and uses the root **Dockerfile**, which builds the agent). If you see “Error creating build plan with Railpack”, make sure Root Directory is **not** set, or set it to **`agent`** so Railway uses `agent/Dockerfile`.
+   - Railway will detect the **Dockerfile** at repo root and use it (no Railpack).
 6. **Variables** (Settings → **Variables**, or the **Variables** tab):
    - Click **+ New Variable** and add these **one by one** (values from your `agent/.env` on your PC):
 
@@ -31,6 +31,18 @@ You’ll deploy the **agent** on Railway, then point **Vercel** at it.
    - Click **Generate Domain** (or **Add a domain**). Railway will assign a URL like `https://something.up.railway.app`.
 8. **Copy that URL** (e.g. `https://test-bed-agentic-agent.up.railway.app`) — you need it for Step 2 and Step 4.
 9. Wait for the deployment to finish (status **Active** / **Success**). If it fails, check **Deploy logs** for errors.
+
+### If you see “Error creating build plan with Railpack”
+
+Railway uses **Railpack** when it doesn’t find a **Dockerfile**. That often happens in monorepos when the service builds from **repo root** and there was no root Dockerfile.
+
+**Fix:** The repo now has a **Dockerfile at repo root** that builds the agent. Do this:
+
+1. In the **agent** service → **Settings** → **Root Directory**.
+2. **Leave Root Directory empty** (clear any value and save). Railway will then build from repo root and use the root **Dockerfile**.
+3. **Redeploy** the service (Deployments → **⋯** → **Redeploy**).
+
+If you prefer to build from the `agent` folder only: set **Root Directory** to **`agent`** (exactly). Then Railway uses `agent/Dockerfile`. Redeploy after changing.
 
 ---
 
