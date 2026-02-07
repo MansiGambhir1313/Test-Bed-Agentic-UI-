@@ -66,7 +66,7 @@ deepagents-open-lovable/
 
 - Python 3.11+
 - Node.js 18+
-- An Anthropic API key
+- **LLM:** An [Anthropic API key](https://console.anthropic.com/) **or** [AWS Bedrock](https://aws.amazon.com/bedrock/) access (set `USE_BEDROCK=true` and AWS credentials)
 
 ### 1. Clone the Repository
 
@@ -89,7 +89,7 @@ pip install -r requirements.txt
 
 # Configure environment
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# Edit .env: add ANTHROPIC_API_KEY, or set USE_BEDROCK=true and AWS credentials for Bedrock
 ```
 
 ### 3. Set Up the GUI (Frontend)
@@ -128,9 +128,14 @@ Open your browser to `http://localhost:5173` and start building!
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | Your Anthropic API key |
-| `MODEL` | No | Model to use (default: `anthropic:claude-sonnet-4-5-20250929`) |
+| `ANTHROPIC_API_KEY` | Yes* | Anthropic API key (omit when using Bedrock) |
+| `USE_BEDROCK` | No | Set `true` to use **AWS Bedrock** (Claude) instead of Anthropic API |
+| `AWS_REGION` | No | AWS region for Bedrock (default: `us-east-1`) |
+| `BEDROCK_MODEL_ID` | No | Bedrock model ID (defaults from `MODEL` or Claude Sonnet 4.5) |
+| `MODEL` | No | Model name (default: `anthropic:claude-sonnet-4-5-20250929`) |
 | `TAVILY_API_KEY` | No | Tavily API key for web search |
+
+\* Use either `ANTHROPIC_API_KEY` or `USE_BEDROCK=true` with AWS credentials (env or IAM).
 
 ### GUI Environment Variables
 
@@ -138,6 +143,19 @@ Open your browser to `http://localhost:5173` and start building!
 |----------|----------|-------------|
 | `VITE_API_URL` | No | LangGraph API URL (default: `http://localhost:2024`) |
 | `VERCEL_API_TOKEN` | No | Vercel token for preview deployments |
+
+### AWS Bedrock
+
+To use **AWS Bedrock** instead of the Anthropic API: enable Claude in [Bedrock Model access](https://console.aws.amazon.com/bedrock/home#/modelaccess), set `USE_BEDROCK=true` and `AWS_REGION`, and provide credentials via `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` or an IAM role. See [DEPLOYMENT.md](DEPLOYMENT.md).
+
+### Deploy (Vercel, Railway, Amplify)
+
+Deploy the repo **as-is** with the included configs:
+
+- **Agent:** Use `agent/Dockerfile` (Railway, ECS, App Runner, or any Docker host). Set `USE_BEDROCK=true` and AWS env for Bedrock.
+- **GUI:** Use `gui/vercel.json` (Vercel), `gui/Dockerfile` (Railway/Docker), or `amplify.yml` (AWS Amplify). Set `VITE_API_URL` to your deployed agent URL at build time.
+
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for step-by-step instructions.
 
 ## Tech Stack
 

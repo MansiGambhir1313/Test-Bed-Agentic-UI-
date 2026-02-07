@@ -1,0 +1,23 @@
+# AWS Amplify - build the GUI only. Point to your deployed agent API via VITE_API_URL.
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd gui
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: gui/dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - gui/node_modules/**/*
+  customHeaders:
+    - pattern: '**'
+      headers:
+        - key: 'Cache-Control'
+          value: 'no-cache'
