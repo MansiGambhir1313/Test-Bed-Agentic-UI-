@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backend URL helper</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 560px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-bottom: 0.25rem; font-weight: 600; }
+    input { width: 100%; padding: 0.5rem; margin-bottom: 1rem; box-sizing: border-box; }
+    button { padding: 0.5rem 1rem; cursor: pointer; background: #0057ff; color: #fff; border: none; border-radius: 6px; }
+    .out { margin-top: 1.5rem; padding: 1rem; background: #f0f0f0; border-radius: 8px; word-break: break-all; }
+    .out h3 { margin-top: 0; }
+    .out a { color: #0057ff; }
+    .out code { display: block; margin: 0.5rem 0; padding: 0.5rem; background: #fff; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Backend URL helper</h1>
+  <p>Paste your <strong>agent URL</strong> from Railway (e.g. <code>https://xxx.up.railway.app</code>).</p>
+  <label for="agent">Agent URL</label>
+  <input id="agent" type="url" placeholder="https://xxx.up.railway.app" />
+  <button type="button" id="go">Generate</button>
+  <div id="out" class="out" style="display: none;">
+    <h3>1. Vercel env var</h3>
+    <p>In Vercel → Settings → Environment Variables, add:</p>
+    <p><strong>Name:</strong> <code>VITE_API_URL</code></p>
+    <p><strong>Value:</strong></p>
+    <code id="vercelVal"></code>
+    <h3>2. Quick-test link (Option B)</h3>
+    <p>Open this URL in your browser to use this backend without redeploying:</p>
+    <a id="quickLink" href="#" target="_blank" rel="noopener"></a>
+    <p><small>Copy the link above if it doesn’t open correctly.</small></p>
+  </div>
+  <script>
+    var base = 'https://test-bed-agentic-c3csx300f-mansi-gambhirs-projects.vercel.app';
+    document.getElementById('go').onclick = function () {
+      var url = document.getElementById('agent').value.trim().replace(/\/$/, '');
+      if (!url) { alert('Paste your agent URL first.'); return; }
+      if (!url.startsWith('http')) url = 'https://' + url;
+      document.getElementById('vercelVal').textContent = url;
+      document.getElementById('quickLink').href = base + '/new?api=' + encodeURIComponent(url);
+      document.getElementById('quickLink').textContent = base + '/new?api=' + encodeURIComponent(url);
+      document.getElementById('out').style.display = 'block';
+    };
+  </script>
+</body>
+</html>
