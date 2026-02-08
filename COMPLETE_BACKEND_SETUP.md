@@ -17,12 +17,13 @@ You’ll deploy the **agent** on Railway, then point **Vercel** at it.
    - **Root Directory:** leave **empty** (so Railway builds from repo root and uses the root **Dockerfile**, which builds the agent). If you see “Error creating build plan with Railpack”, make sure Root Directory is **not** set, or set it to **`agent`** so Railway uses `agent/Dockerfile`.
    - Railway will detect the **Dockerfile** at repo root and use it (no Railpack).
 6. **Variables** (Settings → **Variables**, or the **Variables** tab):
-   - **Option A – From console:** In the repo root, run:
+   - **Option A – From console (API, no login):** Create a token in Railway (Account → Tokens), then run:
      ```powershell
-     .\railway-setup.ps1
+     $env:RAILWAY_TOKEN = "your-token"
+     .\railway-setup-api.ps1
      ```
-     (Requires Node.js/npm and `railway login` first. The script reads `agent/.env` and sets `USE_BEDROCK`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` on Railway.)
-   - **Option B – In the dashboard:** Click **+ New Variable** and add these (values from your `agent/.env`):
+   - **Option B – From console (CLI):** After `railway login` in a terminal, run `.\railway-setup.ps1` (reads `agent/.env`, sets variables via CLI).
+   - **Option C – In the dashboard:** Click **+ New Variable** and add these (values from your `agent/.env`):
 
    | Name | Value (from your agent/.env) |
    |------|-----------------------------|
