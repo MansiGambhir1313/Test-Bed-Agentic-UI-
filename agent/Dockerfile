@@ -16,9 +16,8 @@ COPY skills ./skills
 # Optional: copy .env at build time (prefer runtime env for secrets)
 COPY .env.example .env.example
 
-# Expose LangGraph API port
-EXPOSE 2024
+# Expose port (Railway uses 8080 by default)
+EXPOSE 8080
 
-# Bind to 0.0.0.0 so Railway/proxy can reach the app; use PORT if set by host
-ENV PORT=2024
-CMD ["sh", "-c", "langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-2024}"]
+# Railway injects PORT at runtime. App must listen on 0.0.0.0:$PORT.
+CMD ["sh", "-c", "exec langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-8080}"]

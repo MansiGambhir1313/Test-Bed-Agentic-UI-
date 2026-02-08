@@ -44,8 +44,16 @@ Then open your Vercel app URL, or quick-test: `.../new?api=https://test-bed-agen
 
 ## If you see "Application failed to respond" on Railway
 
-The app must listen on **0.0.0.0** (not 127.0.0.1) so Railway's proxy can reach it. The Dockerfile was updated to run:
+Per [Railway's docs](https://docs.railway.com/networking/troubleshooting/application-failed-to-respond):
 
-`langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-2024}`
+1. **App must listen on 0.0.0.0 and on Railway's PORT** (Railway injects `PORT`, usually **8080**). The Dockerfile now runs:  
+   `langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-8080}`
 
-**Do this:** Pull the latest repo, then in Railway → **Deployments** → **⋯** → **Redeploy** (or push a commit to trigger a new deploy). After the new build, the error should go away.
+2. **Target port in Railway**  
+   Service → **Settings** → **Networking** (or your domain) → **Target port** must match the port the app listens on. Set it to **8080** (or leave default if it’s already 8080). If it was 2024 or something else, change it to **8080** and save.
+
+3. **No custom Start Command**  
+   Service → **Settings** → **Build / Deploy** → ensure **Start Command** is **empty** so the Dockerfile `CMD` is used (with `--host 0.0.0.0` and `--port $PORT`).
+
+4. **Redeploy**  
+   **Deployments** → **⋯** on latest → **Redeploy** (or push a commit so Railway rebuilds). Wait until the new deployment is Active, then try the URL again.

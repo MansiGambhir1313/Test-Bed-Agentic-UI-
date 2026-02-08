@@ -13,7 +13,6 @@ COPY agent/src ./src
 COPY agent/skills ./skills
 COPY agent/.env.example .env.example
 
-EXPOSE 2024
-# Bind to 0.0.0.0 so Railway's proxy can reach the app; use PORT if Railway sets it
-ENV PORT=2024
-CMD ["sh", "-c", "langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-2024}"]
+EXPOSE 8080
+# Railway injects PORT at runtime (usually 8080). App must listen on 0.0.0.0:$PORT.
+CMD ["sh", "-c", "exec langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-8080}"]
