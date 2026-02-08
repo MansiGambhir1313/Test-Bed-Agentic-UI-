@@ -39,3 +39,13 @@ Use this after the repo is connected to Railway. Completes agent + Vercel.
 Then open your Vercel app URL, or quick-test: `.../new?api=https://test-bed-agentic-ui-production.up.railway.app`. The Coding Agent should work.
 
 **Saved agent URL:** see `railway-agent-url.txt` in the repo.
+
+---
+
+## If you see "Application failed to respond" on Railway
+
+The app must listen on **0.0.0.0** (not 127.0.0.1) so Railway's proxy can reach it. The Dockerfile was updated to run:
+
+`langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-2024}`
+
+**Do this:** Pull the latest repo, then in Railway → **Deployments** → **⋯** → **Redeploy** (or push a commit to trigger a new deploy). After the new build, the error should go away.

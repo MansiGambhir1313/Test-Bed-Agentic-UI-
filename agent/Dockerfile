@@ -19,6 +19,6 @@ COPY .env.example .env.example
 # Expose LangGraph API port
 EXPOSE 2024
 
-# Bind to 0.0.0.0 so container accepts external connections
-ENV LANGGRAPH_HOST=0.0.0.0
-CMD ["langgraph", "dev", "--no-browser"]
+# Bind to 0.0.0.0 so Railway/proxy can reach the app; use PORT if set by host
+ENV PORT=2024
+CMD ["sh", "-c", "langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-2024}"]
