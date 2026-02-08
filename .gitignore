@@ -63,3 +63,6 @@ coverage/
 # LangGraph
 .langgraph_api/
 *.pckl
+
+# Deploy script temp files
+agent/.lambda-*.json

@@ -1,5 +1,5 @@
 # DeepAgents Open Lovable - Agent (LangGraph API)
-# Use with Railway, ECS, App Runner, or any container host.
+# Use with Lambda (Web Adapter), ECS, App Runner, or any container host.
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -19,5 +19,5 @@ COPY .env.example .env.example
 # Expose port (Railway uses 8080 by default)
 EXPOSE 8080
 
-# Railway injects PORT at runtime. App must listen on 0.0.0.0:$PORT.
+# Lambda / ECS inject PORT at runtime (default 8080). App must listen on 0.0.0.0:$PORT.
 CMD ["sh", "-c", "exec langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-8080}"]

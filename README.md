@@ -148,12 +148,12 @@ Open your browser to `http://localhost:5173` and start building!
 
 To use **AWS Bedrock** instead of the Anthropic API: enable Claude in [Bedrock Model access](https://console.aws.amazon.com/bedrock/home#/modelaccess), set `USE_BEDROCK=true` and `AWS_REGION`, and provide credentials via `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` or an IAM role. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
-### Deploy (Vercel, Railway, Amplify)
+### Deploy (AWS Lambda + Vercel or Amplify)
 
 Deploy the repo **as-is** with the included configs:
 
-- **Agent:** Use `agent/Dockerfile` (Railway, ECS, App Runner, or any Docker host). Set `USE_BEDROCK=true` and AWS env for Bedrock.
-- **GUI:** Use `gui/vercel.json` (Vercel), `gui/Dockerfile` (Railway/Docker), or `amplify.yml` (AWS Amplify). Set `VITE_API_URL` to your deployed agent URL at build time.
+- **Agent:** Deploy to **AWS Lambda** (container image + Web Adapter) — see [DEPLOY_AWS_LAMBDA.md](DEPLOY_AWS_LAMBDA.md). Or use `agent/Dockerfile` on ECS, App Runner, or any Docker host. Set `USE_BEDROCK=true` and AWS env for Bedrock.
+- **GUI:** Use `gui/vercel.json` (Vercel) or `amplify.yml` (AWS Amplify). Set `VITE_API_URL` to your Lambda Function URL (or agent URL) at build time.
 
 See **[DEPLOYMENT.md](DEPLOYMENT.md)** for step-by-step instructions.
 

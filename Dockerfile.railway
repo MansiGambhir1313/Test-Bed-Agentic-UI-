@@ -1,0 +1,19 @@
+# Agent (LangGraph API) for Railway — no Lambda adapter, writable filesystem.
+# Build from repo root. Railway sets PORT; use RAILWAY_DOCKERFILE_PATH=Dockerfile.railway.
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY agent/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir "langgraph-cli[inmem]"
+
+COPY agent/langgraph.json .
+COPY agent/src ./src
+COPY agent/skills ./skills
+COPY agent/.env.example .env.example
+COPY agent/.env.example .env
+
+EXPOSE 8080
+# Railway injects PORT; LangGraph can create .langgraph_api in /app (writable on Railway).
+CMD ["sh", "-c", "exec langgraph dev --no-browser --host 0.0.0.0 --port ${PORT:-8080}"]

@@ -113,9 +113,8 @@ If you want the backend hosted (e.g. so others can use it without your laptop):
 
 | Option | Notes |
 |--------|--------|
-| **LangGraph Platform** | [LangGraph](https://www.langchain.com/langgraph) — managed LangGraph API; point GUI at that URL. |
-| **Railway / Render / Fly.io** | Run `langgraph dev` or a custom server in a container; expose port 2024 and set `VITE_API_URL` to that URL. |
-| **Docker** | `langgraph build` then run the image and expose 2024. |
+| **AWS Lambda** | See [DEPLOY_AWS_LAMBDA.md](DEPLOY_AWS_LAMBDA.md). Build agent image → ECR → Lambda + Web Adapter → Function URL. Set `VITE_API_URL` to that URL. |
+| **Docker** | Run the agent image on port 8080 and set `VITE_API_URL` to that host. |
 
 For a **single demo**, Option 1 (local) or Option 2 (tunnel) is usually enough.
 

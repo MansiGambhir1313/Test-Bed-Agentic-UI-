@@ -1,0 +1,2 @@
+# Ensure shell scripts use LF in repo (avoids "set: Illegal option" in Lambda when built on Windows)
+agent/start.sh text eol=lf

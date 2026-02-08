@@ -13,11 +13,13 @@ function getApiUrl(): string {
   return import.meta.env.VITE_API_URL || 'http://localhost:2024';
 }
 const API_URL = getApiUrl();
+// Optional: some deployments require X-Api-Key
+const API_KEY = import.meta.env.VITE_API_KEY || import.meta.env.VITE_LANGSMITH_API_KEY || undefined;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <NuqsAdapter>
-      <ClientProvider deploymentUrl={API_URL}>
+      <ClientProvider deploymentUrl={API_URL} apiKey={API_KEY}>
         <BrowserRouter>
           <App />
         </BrowserRouter>
