@@ -6,10 +6,8 @@ The UI loads but the Coding Agent doesn't respond (empty filesystem, no output) 
 
 ## Option 1: Set VITE_API_URL and redeploy (recommended)
 
-1. **Deploy the agent** (if not already):
-   - Deploy the **agent** (backend) on [Railway](https://railway.app/) or another host using `agent/Dockerfile`.
-   - Set env: `USE_BEDROCK=true`, `AWS_REGION`, and your AWS credentials.
-   - Copy the **public URL** (e.g. `https://xxx.up.railway.app`).
+1. **Agent URL** (saved in repo): `https://test-bed-agentic-ui-production.up.railway.app` (see `railway-agent-url.txt`).
+   - If you haven’t deployed the agent yet, deploy it on [Railway](https://railway.app/) and use the URL from there.
 
 2. **In Vercel:**
    - Open your project → **Settings** → **Environment Variables**.

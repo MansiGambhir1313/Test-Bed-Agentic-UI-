@@ -1,0 +1,2 @@
+# Railway agent (backend) URL — use for VITE_API_URL in Vercel and for ?api= quick test
+https://test-bed-agentic-ui-production.up.railway.app

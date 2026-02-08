@@ -33,7 +33,9 @@ Use this after the repo is connected to Railway. Completes agent + Vercel.
 ## Step 3: Vercel + agent URL
 
 1. Vercel → your project → **Settings** → **Environment Variables**.  
-2. Add **VITE_API_URL** = the **Railway agent URL** from Step 2 (no trailing slash).  
+2. Add **VITE_API_URL** = `https://test-bed-agentic-ui-production.up.railway.app` (no trailing slash).  
 3. **Deployments** → **⋯** → **Redeploy**.
 
-Then open your Vercel app URL (or `.../new?api=YOUR_RAILWAY_AGENT_URL`). The Coding Agent should work.
+Then open your Vercel app URL, or quick-test: `.../new?api=https://test-bed-agentic-ui-production.up.railway.app`. The Coding Agent should work.
+
+**Saved agent URL:** see `railway-agent-url.txt` in the repo.
